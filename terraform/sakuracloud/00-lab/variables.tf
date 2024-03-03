@@ -4,3 +4,7 @@ variable "wireguard_peers" {
     public_key = string
   }))
 }
+
+variable "domain_zone" {
+  type = string
+}

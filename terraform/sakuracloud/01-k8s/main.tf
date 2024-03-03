@@ -18,9 +18,43 @@ data "sakuracloud_ssh_key" "initial" {
   }
 }
 
+
 # archive
 data "sakuracloud_archive" "ubuntu" {
   os_type = "ubuntu"
+}
+
+# dns
+data "sakuracloud_dns" "domain_zone" {
+  filter {
+    names = [var.domain_zone]
+  }
+}
+
+resource "sakuracloud_dns_record" "k8s-master-lb" {
+  dns_id = data.sakuracloud_dns.domain_zone.id
+  name   = "k8s-master"
+  type   = "A"
+  ttl    = 60
+  value  = cidrhost(local.k8s_master_cidr, 15)
+}
+
+resource "sakuracloud_dns_record" "k8s-master" {
+  count  = 3
+  dns_id = data.sakuracloud_dns.domain_zone.id
+  name   = format("k8s-master-%02d", count.index)
+  type   = "A"
+  ttl    = 60
+  value  = cidrhost(local.k8s_master_cidr, count.index)
+}
+
+resource "sakuracloud_dns_record" "k8s-worker" {
+  count  = 3
+  dns_id = data.sakuracloud_dns.domain_zone.id
+  name   = format("k8s-worker-%02d", count.index)
+  type   = "A"
+  ttl    = 60
+  value  = cidrhost(local.k8s_worker_cidr, count.index)
 }
 
 #
@@ -115,7 +149,9 @@ resource "sakuracloud_load_balancer" "k8s-master-lb" {
       for_each = { for i in [0, 1, 2] : i => i }
       content {
         ip_address = cidrhost(local.k8s_master_cidr, server.key)
-        protocol   = "tcp"
+        protocol   = "https"
+        path       = "/livez"
+        status     = 200
       }
     }
   }

@@ -1,0 +1,11 @@
+---
+- name: netplan lo-config.yaml
+  ansible.builtin.copy:
+    src: 99-lo-config.yaml
+    dest: /etc/netplan/99-lo-config.yaml
+    mode: 0644
+    owner: root
+    group: root
+
+- name: netplan apply
+  command: netplan apply

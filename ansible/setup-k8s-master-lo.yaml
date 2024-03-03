@@ -1,0 +1,7 @@
+---
+- name: setup master node loopback interface
+  hosts: kube_control_plane
+  become: true
+  remote_user: ubuntu
+  roles:
+  - k8s-master-netplan-lo
