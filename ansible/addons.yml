@@ -12,6 +12,8 @@ cert_manager_namesapce: cert-manager
 metallb_enabled: true
 metallb_protocol: layer2
 metallb_config:
+  layer2:
+  - pool1
   address_pools:
     pool1:
       ip_range:
