@@ -31,3 +31,5 @@ spec:
     repoURL: https://github.com/ophum/kubernetes-practice-lab.git
   syncPolicy:
     automated: {}
+    syncOptions:
+    - CreateNamespace=true
