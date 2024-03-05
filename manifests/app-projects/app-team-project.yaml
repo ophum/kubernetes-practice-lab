@@ -4,6 +4,12 @@ metadata:
   name: app-team-project
   namespace: argocd
 spec:
+  sourceRepos:
+  - https://github.com/*
+  destination:
+    - namespace: app-team-project*
+      server: https://kubernetes.default.svc
+      name: in-cluster
   sourceNamespaces:
     - app-team-project
 ---
