@@ -15,3 +15,12 @@ kubespray でセットアップします。
 ```
 ansible-playbook -i hosts --become -u ubuntu -e "@./extra_vars.yml" kubespray/cluster.yml
 ```
+
+## argocd セットアップ
+
+argocd をセットアップします。
+ローカルから k8s-master に接続できる必要があります。(FIXME: できれば k8s-master-00 上で完結させたい)
+
+```
+ansible-playbook -i hosts -e "@./argocd_encrypted.yml" setup-argocd.yml --ask-vault-pass
+```

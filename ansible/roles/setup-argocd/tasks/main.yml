@@ -28,3 +28,45 @@
 - name: install argocd applications
   kubernetes.core.k8s:
     definition: "{{ argocd_applications_resources }}"
+
+- name: install sakuracloud-dns-credentials secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: sakuracloud-dns-credentials
+        namespace: argocd
+      data:
+        accessToken: "{{ encrypted_sakuracloud_access_token | string | b64encode }}"
+        accessTokenSecret: "{{ encrypted_sakuracloud_access_token_secret | string | b64encode }}"
+
+- name: install issuer    
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1
+      kind: Issuer
+      metadata:
+        name: letsencrypt-issuer-use-sakuracloud-dns
+        namespace: argocd
+      spec:
+        acme:
+          server: https://acme-v02.api.letsencrypt.org/directory
+          email: mail@t-inagaki.net
+          privateKeySecretRef:
+            name: letsencrypt-issuer-use-sakuracloud-dns-issuer-account-key
+          solvers:
+          - dns01:
+              webhook:
+                groupName: acme.t-inagaki.net
+                solverName: sakuracloud-dns-solver
+                config:
+                  zoneID: "{{ encrypted_sakuracloud_dns_zone_id }}"
+                  accessTokenRef:
+                    name: sakuracloud-dns-credentials
+                    key: accessToken
+                  accessTokenSecretRef:
+                    name: sakuracloud-dns-credentials
+                    key: accessTokenSecret
