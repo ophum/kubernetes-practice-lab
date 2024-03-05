@@ -6,6 +6,9 @@ metadata:
 spec:
   sourceRepos:
   - '*'
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
   destinations:
     - namespace: app-team-project*
       server: https://kubernetes.default.svc
