@@ -5,7 +5,7 @@ metadata:
   namespace: app-team-project
 spec:
   destination:
-    namespace: app-team-project
+    namespace: app-team-project-app
     server: https://kubernetes.default.svc
   project: app-team-project
   source:
