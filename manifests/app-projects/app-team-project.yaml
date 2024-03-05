@@ -6,3 +6,19 @@ metadata:
 spec:
   sourceNamespaces:
     - app-team-project
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-team-project
+  namespace: app-team-project
+spec:
+  destination:
+    namespace: app-team-project
+    server: https://kubernetes.default.svc
+  project: app-team-project
+  source:
+    path: manifests/app-projects
+    repoURL: https://github.com/ophum/kubernetes-practice-lab.git
+  syncPolicy:
+    automated: {}
