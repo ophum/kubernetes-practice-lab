@@ -1,0 +1,7 @@
+---
+- name: setup argocd
+  hosts: kube_control_plane[0]
+  remote_user: ubuntu
+  become: true
+  roles:
+  - setup-argocd

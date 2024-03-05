@@ -1,0 +1,23 @@
+---
+- name: install pip3
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+- name: pip3 install kubernetes
+  ansible.builtin.pip:
+    name: kubernetes
+
+- name: create namespace
+  kubernetes.core.k8s:
+    name: argocd
+    api_version: v1
+    kind: Namespace
+    state: present
+- name: Run lookup
+  set_fact:
+    argocd_resources: "{{ lookup('kubernetes.core.kustomize', dir='../manifests/apps/argocd') }}"
+
+- name: install argocd
+  kubernetes.core.k8s:
+    definition: "{{ argocd_resources }}"
+    

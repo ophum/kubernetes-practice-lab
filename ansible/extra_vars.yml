@@ -1,0 +1,5 @@
+apiserver_loadbalancer_domain_name: k8s-master.cloud.t-inagaki.net
+loadbalancer_apiserver_localhost: false
+kubeconfig_localhost: true
+kubeconfig_localhost_ansible_host: false
+kube_proxy_strict_arp: true
