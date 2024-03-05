@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: argocd
 resources:
 - app-of-apps.yaml
+- app-projects.yaml
 - argocd.yaml
 - cert-manager-webhook-sakuracloud.yaml
 - cert-manager.yaml

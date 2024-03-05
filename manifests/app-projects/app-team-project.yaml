@@ -1,0 +1,8 @@
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: app-team-project
+  namespace: argocd
+spec:
+  sourceNamespaces:
+    - app-team-project
