@@ -6,8 +6,8 @@ metadata:
 spec:
   sourceRepos:
   - https://github.com/*
-  destination:
-    - namespace: 'app-team-project'
+  destinations:
+    - namespace: app-team-project*
       server: https://kubernetes.default.svc
       name: in-cluster
   sourceNamespaces:
