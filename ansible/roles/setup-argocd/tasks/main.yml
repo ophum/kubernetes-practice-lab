@@ -13,7 +13,7 @@
     api_version: v1
     kind: Namespace
     state: present
-- name: Run lookup
+- name: kustomize argocd
   set_fact:
     argocd_resources: "{{ lookup('kubernetes.core.kustomize', dir='../manifests/apps/argocd') }}"
 
@@ -21,3 +21,10 @@
   kubernetes.core.k8s:
     definition: "{{ argocd_resources }}"
     
+- name: kustomize argocd applications
+  set_fact:
+    argocd_applications_resources: "{{ lookup('kubernetes.core.kustomize', dir='../manifests/applications') }}"
+
+- name: install argocd applications
+  kubernetes.core.k8s:
+    definition: "{{ argocd_applications_resources }}"
