@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blue-green
+  namespace: app-team-project
+spec:
+  destination:
+    namespace: app-team-project-blue-green
+    server: https://kubernetes.default.svc
+  project: app-team-project
+  source:
+    chart: blue-green
+    path: blue-green
+    repoURL: https://github.com/argoproj/argocd-example-apps
+    targetRevision: 0.1.0
+    helm:
+      releaseName: blue-green
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
