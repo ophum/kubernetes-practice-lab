@@ -4,6 +4,7 @@ namespace: argocd
 resources:
 - app-of-apps.yaml
 - app-projects.yaml
+- argo-rollouts.yaml
 - argocd.yaml
 - cert-manager-webhook-sakuracloud.yaml
 - cert-manager.yaml
