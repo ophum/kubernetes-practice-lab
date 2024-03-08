@@ -1,0 +1,16 @@
+---
+- name: set ssh authorized keys
+  hosts: all
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: ophum.keys
+    ansible.posix.authorized_key:
+      user: ubuntu
+      state: present
+      key: https://github.com/ophum.keys
+  - name: AbeYuki.keys
+    ansible.posix.authorized_key:
+      user: ubuntu
+      state: present
+      key: https://github.com/AbeYuki.keys
