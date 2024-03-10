@@ -11,4 +11,4 @@ resources:
 - ingress-nginx.yaml
 - longhorn.yaml
 - metallb.yaml
-
+#- nfs-provisioner.yaml
