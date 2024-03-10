@@ -8,6 +8,10 @@ spec:
     server: "https://kubernetes.default.svc"
     namespace: longhorn-system
   project: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
   source:
     chart: longhorn
     repoURL: https://charts.longhorn.io
