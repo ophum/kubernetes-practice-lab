@@ -9,5 +9,6 @@ resources:
 - cert-manager-webhook-sakuracloud.yaml
 - cert-manager.yaml
 - ingress-nginx.yaml
+- longhorn.yaml
 - metallb.yaml
 
