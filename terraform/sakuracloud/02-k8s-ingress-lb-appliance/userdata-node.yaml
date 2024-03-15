@@ -1,0 +1,33 @@
+#cloud-config
+fqdn: ${fqdn}
+
+ssh_authorized_keys:
+- ${ssh_authorized_key}
+
+write_files:
+  - path: /etc/netplan/50-netcfg.yaml
+    owner: root:root
+    permissions: 0o644
+    content: |
+      network:
+        ethernets:
+          lo:
+            addresses:
+            - 127.0.0.1/8
+            - 192.168.0.82/32
+            - ::1/128
+          ens3:
+            addresses:
+              - ${ip_address}/24
+            nameservers:
+              addresses:
+              - 210.188.224.10
+              - 210.188.224.11
+            routes:
+              - to: default
+                via: 192.168.0.1
+        renderer: networkd
+        version: 2
+
+runcmd:
+  - sudo netplan apply
