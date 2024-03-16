@@ -27,4 +27,12 @@ spec:
           jobEnabled: false
         defaultSettings:
           defaultLonghornStaticStorageClass: "longhorn"
+        ingress:
+          enabled: true
+          host: longhorn.cloud.t-inagaki.net
+          annotations:
+            cert-manager.io/issuer: letsencrypt-issuer-use-sakuracloud-dns
+          tls: true
+          tlsSecret: longhorn-server-tls
+          ingressClassName: nginx
 
