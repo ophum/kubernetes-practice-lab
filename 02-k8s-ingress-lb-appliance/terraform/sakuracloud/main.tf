@@ -1,21 +1,30 @@
 locals {
-  lab_wireguard_cidr = "10.0.0.0/24"
-  lab_cidr           = cidrsubnet("192.168.0.0/24", 4, 0)
-  control_plane = {
-    cidr      = cidrsubnet("192.168.0.0/24", 4, 3)
+  lab_wireguard_cidr     = "10.0.0.0/24"
+  lab_cidr               = "172.31.0.0/16"
+  lab_common_cidr        = "172.31.0.0/24"
+  lab_gateway_ip_address = "172.31.0.1"
+}
+
+locals {
+  k8s_cidr = cidrsubnet(local.lab_cidr, 8, 2)
+}
+
+locals {
+  cplane = {
+    cidr      = cidrsubnet(local.k8s_cidr, 4, 0)
     count     = 1
     vcpus     = 4
     memory    = 4
     disk_size = 40
   }
   node = {
-    cidr      = cidrsubnet("192.168.0.0/24", 4, 4)
+    cidr      = cidrsubnet(local.k8s_cidr, 4, 1)
     count     = 3
     vcpus     = 4
     memory    = 4
     disk_size = 40
   }
-  lb_cidr = cidrsubnet("192.168.0.0/24", 4, 5)
+  lb_cidr = cidrsubnet(local.k8s_cidr, 4, 2)
 }
 
 locals {
@@ -53,23 +62,23 @@ data "sakuracloud_archive" "ubuntu" {
 }
 
 
-resource "sakuracloud_disk" "control_plane" {
-  count             = local.control_plane.count
-  name              = format("control-plane-%02d.test02", count.index + 1)
+resource "sakuracloud_disk" "cplane" {
+  count             = local.cplane.count
+  name              = format("cplane-%02d.k8s-02", count.index + 1)
   source_archive_id = data.sakuracloud_archive.ubuntu.id
-  size              = local.control_plane.disk_size
+  size              = local.cplane.disk_size
 }
 
-resource "sakuracloud_server" "control_plane" {
-  count = local.control_plane.count
-  name  = format("control-plane-%02d.test02", count.index + 1)
+resource "sakuracloud_server" "cplane" {
+  count = local.cplane.count
+  name  = format("cplane-%02d.k8s-02", count.index + 1)
 
-  core   = local.control_plane.vcpus
-  memory = local.control_plane.memory
+  core   = local.cplane.vcpus
+  memory = local.cplane.memory
   gpu    = 0
 
   disks = [
-    element(sakuracloud_disk.control_plane, count.index).id
+    element(sakuracloud_disk.cplane, count.index).id
   ]
 
   network_interface {
@@ -77,31 +86,33 @@ resource "sakuracloud_server" "control_plane" {
   }
 
   user_data = templatefile("userdata.yaml", {
-    fqdn               = format("control-plane-%02d.test02", count.index + 1)
-    ip_address         = cidrhost(local.control_plane.cidr, count.index + 1)
+    fqdn               = format("cplane-%02d.k8s-02.%s", count.index + 1, data.sakuracloud_dns.domain_zone.zone)
+    vip                = ""
+    ip_address         = cidrhost(local.cplane.cidr, count.index + 1)
+    gateway            = local.lab_gateway_ip_address
     ssh_authorized_key = data.sakuracloud_ssh_key.initial.public_key
   })
 }
 
-resource "sakuracloud_dns_record" "control_plane" {
-  count  = local.control_plane.count
+resource "sakuracloud_dns_record" "cplane" {
+  count  = local.cplane.count
   dns_id = data.sakuracloud_dns.domain_zone.id
-  name   = format("control-plane-%02d.test02", count.index + 1)
+  name   = format("cplane-%02d.k8s-02", count.index + 1)
   type   = "A"
   ttl    = 60
-  value  = cidrhost(local.control_plane.cidr, count.index + 1)
+  value  = cidrhost(local.cplane.cidr, count.index + 1)
 }
 
 resource "sakuracloud_disk" "node" {
   count             = local.node.count
-  name              = format("node-%02d.test02", count.index + 1)
+  name              = format("node-%02d.k8s-02", count.index + 1)
   source_archive_id = data.sakuracloud_archive.ubuntu.id
   size              = local.node.disk_size
 }
 
 resource "sakuracloud_server" "node" {
   count = local.node.count
-  name  = format("node-%02d.test02", count.index + 1)
+  name  = format("node-%02d.k8s-02", count.index + 1)
 
   core   = local.node.vcpus
   memory = local.node.memory
@@ -115,9 +126,11 @@ resource "sakuracloud_server" "node" {
     upstream = data.sakuracloud_switch.k8s-lab-switch0.id
   }
 
-  user_data = templatefile("userdata-node.yaml", {
-    fqdn               = format("node-%02d.test02", count.index + 1)
+  user_data = templatefile("userdata.yaml", {
+    fqdn               = format("node-%02d.k8s-02.%s", count.index + 1, data.sakuracloud_dns.domain_zone.zone)
+    vip                = local.lb.ingress_vip
     ip_address         = cidrhost(local.node.cidr, count.index + 1)
+    gateway            = local.lab_gateway_ip_address
     ssh_authorized_key = data.sakuracloud_ssh_key.initial.public_key
   })
 }
@@ -125,14 +138,14 @@ resource "sakuracloud_server" "node" {
 resource "sakuracloud_dns_record" "node" {
   count  = local.node.count
   dns_id = data.sakuracloud_dns.domain_zone.id
-  name   = format("node-%02d.test02", count.index + 1)
+  name   = format("node-%02d.k8s-02", count.index + 1)
   type   = "A"
   ttl    = 60
   value  = cidrhost(local.node.cidr, count.index + 1)
 }
 
 resource "sakuracloud_load_balancer" "lb" {
-  name = "lb.test02"
+  name = "lb.k8s-02"
   plan = "standard"
 
   network_interface {
@@ -149,7 +162,7 @@ resource "sakuracloud_load_balancer" "lb" {
     delay_loop = 10
 
     dynamic "server" {
-      for_each = { for i in [1, 2, 3] : i => i }
+      for_each = { for i, v in sakuracloud_server.node : i + 1 => v }
       content {
         ip_address = cidrhost(local.node.cidr, server.key)
         protocol   = "http"
@@ -165,7 +178,7 @@ resource "sakuracloud_load_balancer" "lb" {
     delay_loop = 10
 
     dynamic "server" {
-      for_each = { for i in [1, 2, 3] : i => i }
+      for_each = { for i, v in sakuracloud_server.node : i + 1 => v }
       content {
         ip_address = cidrhost(local.node.cidr, server.key)
         protocol   = "https"
@@ -178,7 +191,7 @@ resource "sakuracloud_load_balancer" "lb" {
 
 resource "sakuracloud_dns_record" "app" {
   dns_id = data.sakuracloud_dns.domain_zone.id
-  name   = "app.test02"
+  name   = "app.k8s-02"
   type   = "A"
   ttl    = 60
   value  = local.lb.ingress_vip

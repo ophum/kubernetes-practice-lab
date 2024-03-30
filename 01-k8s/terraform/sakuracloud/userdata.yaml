@@ -1,6 +1,10 @@
 #cloud-config
 fqdn: ${fqdn}
 
+# this is unsafe password
+password: $6$SLbyeRYNpSf0ll21$AM11XF7HStVbYkLad4a0g1NER48hJUa4/PMMiq7TG2QMY5dZIVJaTKARPT1TqjcQxK4ebeoVxoD/f3/bJ01xo/
+lock_passwd: false
+
 ssh_authorized_keys:
 - ${ssh_authorized_key}
 
@@ -13,19 +17,19 @@ write_files:
         ethernets:
           lo:
             addresses:
-            - 127.0.0.1/8
-            - 192.168.0.82/32
-            - ::1/128
+              - 127.0.0.1/8
+              - ::1/128
+              %{ if vip != "" }- ${vip}/32%{ endif }
           ens3:
             addresses:
-              - ${ip_address}/24
+              - ${ip_address}/16
             nameservers:
               addresses:
               - 210.188.224.10
               - 210.188.224.11
             routes:
               - to: default
-                via: 192.168.0.1
+                via: ${gateway}
         renderer: networkd
         version: 2
 

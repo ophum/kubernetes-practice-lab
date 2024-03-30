@@ -1,6 +1,10 @@
 locals {
   lab_wireguard_cidr = "10.0.0.0/24"
-  lab_cidr           = cidrsubnet("192.168.0.0/24", 4, 0)
+  lab_cidr           = "172.31.0.0/16"
+}
+
+locals {
+  lab_common_cidr = cidrsubnet(local.lab_cidr, 8, 0)
 }
 
 resource "sakuracloud_switch" "k8s-lab-switch0" {
@@ -15,8 +19,8 @@ resource "sakuracloud_vpc_router" "k8s-lab-router" {
   private_network_interface {
     index        = 1
     switch_id    = sakuracloud_switch.k8s-lab-switch0.id
-    ip_addresses = [cidrhost(local.lab_cidr, 1)]
-    netmask      = 24
+    ip_addresses = [cidrhost(local.lab_common_cidr, 1)]
+    netmask      = 16
   }
 
   wire_guard {
