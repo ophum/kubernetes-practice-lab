@@ -22,7 +22,7 @@ spec:
             name: argocd-server
             port:
               name: https
-  tls:
-  - hosts:
-    - argocd.cloud.t-inagaki.net
-    secretName: argocd-server-tls # as expected by argocd-server
+  #tls:
+  #- hosts:
+  #  - argocd.cloud.t-inagaki.net
+  #  secretName: argocd-server-tls # as expected by argocd-server
