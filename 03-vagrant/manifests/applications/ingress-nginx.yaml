@@ -17,9 +17,9 @@ spec:
       parameters:
       - name: controller.service.type
         value: NodePort
-      - name: controller.nodePorts.http
+      - name: controller.service.nodePorts.http
         value: "30080"
-      - name: controller.nodePorts.https
+      - name: controller.service.nodePorts.https
         value: "30443"
   syncPolicy:
     automated: {}
