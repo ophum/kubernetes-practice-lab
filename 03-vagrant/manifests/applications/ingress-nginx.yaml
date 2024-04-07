@@ -21,6 +21,8 @@ spec:
         value: "30080"
       - name: controller.nodePorts.https
         value: "30443"
+      - name: controller.kind
+        value: DaemonSet
   syncPolicy:
     automated: {}
     syncOptions:
