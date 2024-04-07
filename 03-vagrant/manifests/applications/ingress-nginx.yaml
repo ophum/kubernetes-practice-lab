@@ -16,9 +16,11 @@ spec:
       releaseName: ingress-nginx
       parameters:
       - name: controller.service.type
-        value: ClusterIP
-      - name: controller.hostPort.enabled
-        value: "true"
+        value: NodePort
+      - name: controller.nodePorts.http
+        value: "30080"
+      - name: controller.nodePorts.https
+        value: "30443"
   syncPolicy:
     automated: {}
     syncOptions:
